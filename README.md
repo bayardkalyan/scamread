@@ -1,13 +1,12 @@
 # ScamRead
 
-ScamRead is a minimal FastAPI web app that analyzes pasted messages or links for scam risk using the OpenAI API.
+ScamRead is a minimal FastAPI web app that analyzes pasted messages or links for scam risk using local rule-based logic.
 
 ## Features
 
 - `POST /analyze` endpoint
 - Structured JSON output
 - Simple static frontend
-- `.env` support
 - Graceful API error handling
 
 ## Local Setup
@@ -25,27 +24,13 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-3. Create your `.env` file:
-
-```bash
-copy .env.example .env
-```
-
-4. Add your OpenAI API key to `.env`:
-
-```env
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-5.4-nano
-REQUEST_TIMEOUT_SECONDS=20
-```
-
-5. Run the app:
+3. Run the app:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-6. Open the app:
+4. Open the app:
 
 ```text
 http://127.0.0.1:8000
@@ -57,8 +42,7 @@ This repo includes `render.yaml`, so Render can create the web service from the 
 
 1. Push this project to GitHub, GitLab, or Bitbucket.
 2. In Render, create a new Blueprint from the repo.
-3. Add `OPENAI_API_KEY` when Render asks for the secret environment variable.
-4. Deploy.
+3. Deploy.
 
 Render will use:
 

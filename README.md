@@ -152,6 +152,14 @@ static files cached for a year) and `deploy.sh`, which pulls this repository,
 keeps the database, installs dependencies, restarts the service and rolls back
 if the health check fails.
 
+## WordPress pop-up
+
+[`wordpress/scamread-checker-promo`](wordpress/scamread-checker-promo) is a
+small WordPress plugin that shows a dismissible "Got a suspicious message?"
+card on scamread.com linking to the checker. Install
+`wordpress/dist/scamread-checker-promo.zip` (Plugins → Add New → Upload) and
+adjust it under Settings → ScamRead Checker.
+
 ## Licence
 
 Code: [MIT](LICENSE). Fonts in `static/fonts/` (Inter, JetBrains Mono): SIL

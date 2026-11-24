@@ -37,6 +37,16 @@ PRIVATE_PATTERNS_DIR = os.environ.get("SCAMREAD_PRIVATE_PATTERNS_DIR", "").strip
 # Admin token for write endpoints. Unset means admin endpoints are disabled.
 ADMIN_TOKEN = os.environ.get("SCAMREAD_ADMIN_TOKEN", "").strip()
 
+# Admin panel (app.scamread.com/admin). The first admin account is created
+# from these two settings if it does not exist yet; the hash comes from
+#   python -m app.admin_cli hash
+# Later password changes happen in the panel (or with app.admin_cli).
+ADMIN_USER = os.environ.get("SCAMREAD_ADMIN_USER", "").strip()
+ADMIN_PASSWORD_HASH = os.environ.get("SCAMREAD_ADMIN_PASSWORD_HASH", "").strip()
+ADMIN_SESSION_DAYS = _int("SCAMREAD_ADMIN_SESSION_DAYS", 30)
+LOGIN_MAX_FAILURES = _int("SCAMREAD_LOGIN_MAX_FAILURES", 5)
+LOGIN_LOCK_MINUTES = _int("SCAMREAD_LOGIN_LOCK_MINUTES", 15)
+
 # Result cache: results kept in memory only, keyed by a hash of the text.
 CACHE_TTL_SECONDS = _int("SCAMREAD_CACHE_TTL_SECONDS", 900)
 CACHE_MAX_ENTRIES = _int("SCAMREAD_CACHE_MAX_ENTRIES", 5000)
@@ -49,4 +59,4 @@ OBSERVATION_FLUSH_SECONDS = _int("SCAMREAD_OBSERVATION_FLUSH_SECONDS", 5)
 RECORD_MIN_RISK_SCORE = _int("SCAMREAD_RECORD_MIN_RISK_SCORE", 40)
 
 # Bump to make browsers fetch new CSS/JS after a deploy.
-ASSET_VERSION = os.environ.get("SCAMREAD_ASSET_VERSION", "2026.11.24")
+ASSET_VERSION = os.environ.get("SCAMREAD_ASSET_VERSION", "2026.11.24.2")

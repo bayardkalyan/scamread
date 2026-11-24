@@ -131,6 +131,30 @@ CREATE TABLE IF NOT EXISTS domain_observations (
 
 CREATE INDEX IF NOT EXISTS idx_pattern_obs_brand ON pattern_observations(claimed_brand);
 CREATE INDEX IF NOT EXISTS idx_domain_obs_last_seen ON domain_observations(last_seen);
+
+-- Anonymous daily totals: how many checks per day and risk level. Nothing else.
+CREATE TABLE IF NOT EXISTS daily_stats (
+    day TEXT NOT NULL,
+    risk_level TEXT NOT NULL,
+    checks INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (day, risk_level)
+);
+
+-- Admin panel login. Passwords are stored only as scrypt hashes.
+CREATE TABLE IF NOT EXISTS admin_users (
+    username TEXT PRIMARY KEY COLLATE NOCASE,
+    password_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    password_changed_at TEXT NOT NULL
+);
+
+-- Logged-in admin sessions. Only a SHA-256 of the session cookie is stored.
+CREATE TABLE IF NOT EXISTS admin_sessions (
+    token_hash TEXT PRIMARY KEY,
+    username TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL
+);
 """
 
 

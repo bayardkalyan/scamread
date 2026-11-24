@@ -5,6 +5,7 @@ matches nothing (the usual case) never touches the database.
 """
 
 import json
+import re
 import sqlite3
 import threading
 import time
@@ -30,13 +31,35 @@ INDICATOR_TYPES = {
     "ethereum_wallets": "ethereum_wallet",
 }
 
-_index: frozenset[tuple[str, str]] = frozenset()
+# (type, normalised value) -> stored values, e.g. ("phone_number", "9876543210") -> {"+91 98765 43210"}
+_index: dict[tuple[str, str], frozenset[str]] = {}
 _index_loaded_at = 0.0
 _index_lock = threading.Lock()
 
 
+def normalise(indicator_type: str, value: str) -> str:
+    """Make equal indicators look equal: case, 'www.', phone formatting."""
+    value = value.strip().lower()
+    if indicator_type == "phone_number":
+        digits = re.sub(r"\D", "", value)
+        return digits[-10:] if len(digits) >= 10 else digits
+    if indicator_type == "domain":
+        value = re.sub(r"^https?://", "", value).split("/")[0]
+        return value.removeprefix("www.").rstrip(".")
+    return value
+
+
+def _lookup_keys(indicator_type: str, value: str) -> list[str]:
+    """Keys to look up; a website also matches its parent scam domains."""
+    key = normalise(indicator_type, value)
+    if indicator_type != "domain":
+        return [key]
+    labels = key.split(".")
+    return [".".join(labels[i:]) for i in range(len(labels) - 1)]
+
+
 def refresh_index() -> None:
-    """Load every published (type, value) pair into memory."""
+    """Load every published indicator into memory."""
     global _index, _index_loaded_at
     rows = get_connection().execute(
         """
@@ -46,12 +69,16 @@ def refresh_index() -> None:
         WHERE c.review_status = 'published'
         """
     ).fetchall()
+    index: dict[tuple[str, str], set[str]] = {}
+    for r in rows:
+        key = (r["indicator_type"], normalise(r["indicator_type"], r["indicator_value"]))
+        index.setdefault(key, set()).add(r["indicator_value"])
     with _index_lock:
-        _index = frozenset((r["indicator_type"], r["indicator_value"].lower()) for r in rows)
+        _index = {k: frozenset(v) for k, v in index.items()}
         _index_loaded_at = time.time()
 
 
-def _published_index() -> frozenset[tuple[str, str]]:
+def _published_index() -> dict[tuple[str, str], frozenset[str]]:
     if time.time() - _index_loaded_at >= config.PATTERN_RELOAD_SECONDS:
         try:
             refresh_index()
@@ -146,19 +173,19 @@ def get_published_campaign(campaign_id: str) -> CampaignSummary | None:
 def find_campaign_matches(indicators: Indicators) -> list[CampaignMatch]:
     """Find exact IOC matches; skip the database entirely when nothing can match."""
     index = _published_index()
-    wanted = [
-        (INDICATOR_TYPES[field], value)
-        for field, values in indicators.model_dump().items()
-        for value in values
-        if (INDICATOR_TYPES[field], value.lower()) in index
-    ]
+    wanted: set[tuple[str, str]] = set()
+    for field, values in indicators.model_dump().items():
+        indicator_type = INDICATOR_TYPES[field]
+        for value in values:
+            for key in _lookup_keys(indicator_type, value):
+                wanted.update((indicator_type, stored) for stored in index.get((indicator_type, key), ()))
     if not wanted:
         return []
 
     matches: dict[str, list[KnownIndicator]] = defaultdict(list)
     campaign_rows: dict[str, sqlite3.Row] = {}
     connection = get_connection()
-    for indicator_type, value in wanted:
+    for indicator_type, value in sorted(wanted):
         rows = connection.execute(
             """
             SELECT campaigns.*,

@@ -14,6 +14,7 @@ import json
 import logging
 import queue
 import threading
+from collections import Counter
 from datetime import UTC, datetime
 
 from app import config
@@ -29,6 +30,8 @@ COMMON_LEGIT_DOMAINS = {
 }
 
 _queue: "queue.Queue[dict]" = queue.Queue(maxsize=10_000)
+_daily: Counter = Counter()
+_daily_lock = threading.Lock()
 _stop = threading.Event()
 _thread: threading.Thread | None = None
 
@@ -76,6 +79,20 @@ def record(observation: dict | None) -> None:
         log.warning("observation queue full, dropping one observation")
 
 
+def count(risk_level: str) -> None:
+    """Count one check for today's totals (just a number per risk level)."""
+    day = datetime.now(UTC).date().isoformat()
+    with _daily_lock:
+        _daily[(day, risk_level)] += 1
+
+
+def _take_daily() -> list[tuple[str, str, int]]:
+    with _daily_lock:
+        items = [(day, level, n) for (day, level), n in _daily.items()]
+        _daily.clear()
+    return items
+
+
 def _signature(obs: dict) -> str:
     key = json.dumps(
         [
@@ -100,11 +117,17 @@ def flush() -> int:
             batch.append(_queue.get_nowait())
         except queue.Empty:
             break
-    if not batch:
+    daily = _take_daily()
+    if not batch and not daily:
         return 0
     today = datetime.now(UTC).date().isoformat()
     connection = get_connection()
     with connection:
+        connection.executemany(
+            "INSERT INTO daily_stats (day, risk_level, checks) VALUES (?, ?, ?) "
+            "ON CONFLICT(day, risk_level) DO UPDATE SET checks = checks + excluded.checks",
+            daily,
+        )
         for obs in batch:
             connection.execute(
                 """

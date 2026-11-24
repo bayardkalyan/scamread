@@ -95,7 +95,7 @@ def test_admin_can_add_a_brand_and_it_takes_effect(client):
 
 
 def test_bad_regex_is_rejected(client):
-    r = client.post("/api/admin/patterns/rules", headers=ADMIN, json={"category": "urgency", "value": "(unclosed"})
+    r = client.post("/api/admin/patterns/rules", headers=ADMIN, json={"category": "urgency", "value": "(unclosed", "plain": False})
     assert r.status_code == 422
 
 

@@ -5,7 +5,10 @@ If that setting is empty on the server, these endpoints answer 404.
 """
 
 import json
+import re
+import secrets
 import sqlite3
+from datetime import UTC, datetime, timedelta
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -39,7 +42,31 @@ def stats(limit: int = 20) -> dict:
         for tld in json.loads(r["link_tlds_json"]):
             tld_counts[tld] = tld_counts.get(tld, 0) + r["hits"]
 
+    today = datetime.now(UTC).date()
+    days = [(today - timedelta(days=i)).isoformat() for i in range(13, -1, -1)]
+    per_day = {d: {"low": 0, "medium": 0, "high": 0} for d in days}
+    for r in db.execute("SELECT day, risk_level, checks FROM daily_stats WHERE day >= ?", (days[0],)):
+        if r["day"] in per_day and r["risk_level"] in per_day[r["day"]]:
+            per_day[r["day"]][r["risk_level"]] = r["checks"]
+    week = days[-7:]
+
+    def total(ds, levels=("low", "medium", "high")):
+        return sum(per_day[d][lv] for d in ds for lv in levels)
+
     return {
+        "summary": {
+            "checks_today": total([days[-1]]),
+            "checks_7_days": total(week),
+            "risky_7_days": total(week, ("medium", "high")),
+            "scam_websites": db.execute("SELECT COUNT(*) FROM domain_observations").fetchone()[0],
+            "brands_faked": db.execute(
+                "SELECT COUNT(DISTINCT claimed_brand) FROM pattern_observations WHERE claimed_brand IS NOT NULL"
+            ).fetchone()[0],
+            "campaigns_published": db.execute(
+                "SELECT COUNT(*) FROM campaigns WHERE review_status = 'published'"
+            ).fetchone()[0],
+        },
+        "daily": [{"day": d, **per_day[d]} for d in days],
         "patterns_version": pattern_store.current().version,
         "cache": {"entries": len(results), "hits": results.hits, "misses": results.misses},
         "totals": rows(
@@ -86,6 +113,15 @@ class RuleIn(BaseModel):
     category: str = Field(description="One of: " + ", ".join(sorted(CATEGORIES)))
     value: str = Field(min_length=1, max_length=300)
     note: str | None = Field(default=None, max_length=300)
+    # True: value is ordinary words, turned into a safe whole-word pattern.
+    # False: value is a Python regular expression (advanced).
+    plain: bool = True
+
+
+def plain_to_pattern(words: str) -> str:
+    """'act fast' -> whole-word pattern matching 'act fast' (any spacing)."""
+    parts = [re.escape(w) for w in words.lower().split()]
+    return r"\b" + r"\s+".join(parts) + r"\b"
 
 
 class BrandIn(BaseModel):
@@ -117,7 +153,9 @@ def list_patterns() -> dict:
         "rules": [dict(r) for r in db.execute("SELECT * FROM pattern_rules ORDER BY category, id")],
         "brands": [
             {**dict(r), "legit_domains": json.loads(r["legit_domains_json"])}
-            for r in db.execute("SELECT * FROM brands ORDER BY position, name")
+            for r in db.execute(
+                "SELECT * FROM brands ORDER BY CASE source WHEN 'analyst' THEN 0 ELSE 1 END, position, name"
+            )
         ],
         "suspicious_tlds": [dict(r) for r in db.execute("SELECT * FROM suspicious_tlds ORDER BY tld")],
     }
@@ -127,19 +165,24 @@ def list_patterns() -> dict:
 def add_rule(rule: RuleIn) -> dict:
     if rule.category not in CATEGORIES:
         raise HTTPException(422, f"Unknown category. Use one of: {', '.join(sorted(CATEGORIES))}")
+    value = rule.value.strip()
+    if not value:
+        raise HTTPException(422, "Please type a word or phrase.")
     if rule.category in pattern_store.REGEX_CATEGORIES:
-        import re
-
+        if rule.plain:
+            value = plain_to_pattern(value)
         try:
-            re.compile(rule.value)
+            re.compile(value)
         except re.error as exc:
             raise HTTPException(422, f"Invalid regular expression: {exc}") from exc
+    else:
+        value = " ".join(value.lower().split())
     db = get_connection()
     with db:
         db.execute(
             "INSERT INTO pattern_rules (category, value, note, source) VALUES (?, ?, ?, 'analyst') "
             "ON CONFLICT(category, value) DO UPDATE SET active = 1, note = COALESCE(excluded.note, note)",
-            (rule.category, rule.value if rule.category in pattern_store.REGEX_CATEGORIES else rule.value.lower(), rule.note),
+            (rule.category, value, rule.note),
         )
     return _changed()
 
@@ -215,7 +258,7 @@ def reload_everything() -> dict:
 
 
 class CampaignIn(BaseModel):
-    campaign_id: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{2,79}$")
+    campaign_id: str | None = Field(default=None, pattern=r"^[a-z0-9][a-z0-9-]{2,79}$")
     title: str = Field(min_length=3, max_length=200)
     status: str = Field(default="active", max_length=40)
     countries: list[str] = Field(default_factory=list, max_length=20)
@@ -229,14 +272,83 @@ class CampaignIn(BaseModel):
 class CampaignIndicatorIn(BaseModel):
     indicator_type: Literal[tuple(campaign_store.INDICATOR_TYPES.values())]  # type: ignore[valid-type]
     indicator_value: str = Field(min_length=1, max_length=500)
+
+    def model_post_init(self, _context) -> None:
+        value = self.indicator_value.strip()
+        if self.indicator_type in {"domain", "email_address", "url"}:
+            value = value.lower() if self.indicator_type != "url" else value
+        if self.indicator_type == "domain":
+            value = re.sub(r"^https?://", "", value).split("/")[0].removeprefix("www.")
+        self.indicator_value = value
+
     first_seen: str | None = None
     last_seen: str | None = None
     source_reference: str | None = Field(default=None, max_length=500)
     confidence: int | None = Field(default=None, ge=0, le=100)
 
 
+def _slug(title: str) -> str:
+    base = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:60] or "campaign"
+    return f"{base}-{secrets.token_hex(2)}"
+
+
+@router.get("/campaigns")
+def list_campaigns() -> dict:
+    rows = get_connection().execute(
+        "SELECT c.*, COUNT(ci.id) AS indicator_count FROM campaigns c "
+        "LEFT JOIN campaign_indicators ci ON ci.campaign_id = c.campaign_id "
+        "GROUP BY c.campaign_id ORDER BY c.rowid DESC"
+    ).fetchall()
+    return {
+        "campaigns": [
+            {**{k: r[k] for k in r.keys() if k != "countries_json"}, "countries": json.loads(r["countries_json"])}
+            for r in rows
+        ]
+    }
+
+
+@router.get("/campaigns/{campaign_id}")
+def campaign_detail(campaign_id: str) -> dict:
+    db = get_connection()
+    row = db.execute("SELECT * FROM campaigns WHERE campaign_id = ?", (campaign_id,)).fetchone()
+    if row is None:
+        raise HTTPException(404, "No such campaign.")
+    indicators = db.execute(
+        "SELECT indicator_type, indicator_value, first_seen, last_seen, source_reference, confidence "
+        "FROM campaign_indicators WHERE campaign_id = ? ORDER BY id",
+        (campaign_id,),
+    ).fetchall()
+    return {
+        "campaign": {**{k: row[k] for k in row.keys() if k != "countries_json"}, "countries": json.loads(row["countries_json"])},
+        "indicators": [dict(i) for i in indicators],
+    }
+
+
+class IndicatorKey(BaseModel):
+    indicator_type: str
+    indicator_value: str
+
+
+@router.post("/campaigns/{campaign_id}/indicators/remove")
+def remove_campaign_indicator(campaign_id: str, key: IndicatorKey) -> dict:
+    db = get_connection()
+    with db:
+        removed = db.execute(
+            "DELETE FROM campaign_indicators WHERE campaign_id = ? AND indicator_type = ? AND indicator_value = ?",
+            (campaign_id, key.indicator_type, key.indicator_value),
+        ).rowcount
+    if not removed:
+        raise HTTPException(404, "No such indicator.")
+    campaign_store.refresh_index()
+    results.clear()
+    return {"ok": True}
+
+
 @router.post("/campaigns", status_code=201)
 def create_campaign(campaign: CampaignIn) -> dict:
+    data = campaign.model_dump()
+    data["campaign_id"] = data["campaign_id"] or _slug(campaign.title)
+    campaign = CampaignIn(**data)
     try:
         campaign_store.create_campaign(**campaign.model_dump())
     except sqlite3.IntegrityError as exc:

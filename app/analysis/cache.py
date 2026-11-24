@@ -17,7 +17,7 @@ class ResultCache:
     def __init__(self, ttl_seconds: int, max_entries: int):
         self.ttl = ttl_seconds
         self.max_entries = max_entries
-        self._data: OrderedDict[str, tuple[float, bytes]] = OrderedDict()
+        self._data: OrderedDict[str, tuple[float, object]] = OrderedDict()
         self._lock = threading.Lock()
         self.hits = 0
         self.misses = 0
@@ -27,7 +27,7 @@ class ResultCache:
         # Including the pattern version means a pattern update never serves stale results.
         return hashlib.sha256(f"{patterns_version}\x00{text}".encode("utf-8")).hexdigest()
 
-    def get(self, key: str) -> bytes | None:
+    def get(self, key: str):
         now = time.monotonic()
         with self._lock:
             item = self._data.get(key)
@@ -40,7 +40,7 @@ class ResultCache:
             self.hits += 1
             return item[1]
 
-    def set(self, key: str, value: bytes) -> None:
+    def set(self, key: str, value) -> None:
         if self.ttl <= 0 or self.max_entries <= 0:
             return
         with self._lock:

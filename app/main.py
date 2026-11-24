@@ -9,11 +9,12 @@ from fastapi.staticfiles import StaticFiles
 from app import config
 from app.analysis import patterns as pattern_store
 from app.routes.admin import router as admin_router
+from app.routes.admin_panel import router as admin_panel_router
 from app.routes.api import APP_VERSION, router as api_router
 from app.routes.intelligence import router as intelligence_router
 from app.routes.web import router as web_router
 from app.security.headers import SecurityHeadersMiddleware
-from app.services import campaign_store, observations
+from app.services import admin_auth, campaign_store, observations
 from app.services.database import ensure_schema
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -26,6 +27,7 @@ async def lifespan(_app: FastAPI):
     pattern_store.seed_database()
     pattern_store.reload_now()
     campaign_store.refresh_index()
+    admin_auth.ensure_bootstrap_admin()
     observations.start()
     yield
     observations.stop()
@@ -49,3 +51,4 @@ app.include_router(web_router)
 app.include_router(api_router)
 app.include_router(intelligence_router)
 app.include_router(admin_router)
+app.include_router(admin_panel_router)

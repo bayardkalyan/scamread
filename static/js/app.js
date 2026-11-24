@@ -21,8 +21,9 @@
   const titleCase = (value) =>
     String(value).replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()).replace(/\bUrls\b/, "URLs").replace(/\bIpv4\b/, "IPv4").replace(/\bMd5\b/, "MD5").replace(/\bSha(\d+)\b/, "SHA$1");
 
+  const ACRONYMS = new Set(["sbi", "hdfc", "icici", "axis", "pnb", "bob", "idbi", "yes", "dhl", "usps", "ups", "upi", "kyc", "pan", "lic", "irctc", "bsnl", "jio", "id"]);
   const brandName = (value) =>
-    value.length <= 5 ? value.toUpperCase() : value.replace(/\b\w/g, (l) => l.toUpperCase());
+    value.split(" ").map((w) => (ACRONYMS.has(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(" ");
 
   /* ---------- views ---------- */
 

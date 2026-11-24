@@ -40,12 +40,17 @@ def analyze_json(text: str, cache: ResultCache = results) -> bytes:
     key = cache.key(text, patterns.version)
     cached = cache.get(key)
     if cached is not None:
-        return cached
+        body, level = cached
+        observations.count(level)
+        return body
+    result = _analyze_uncached(text, patterns)
+    level = result["analysis"]["risk_level"]
     body = json.dumps(
-        _analyze_uncached(text, patterns),
+        result,
         default=lambda value: value.model_dump(),
         ensure_ascii=False,
         separators=(",", ":"),
     ).encode("utf-8")
-    cache.set(key, body)
+    cache.set(key, (body, level))
+    observations.count(level)
     return body

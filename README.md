@@ -78,10 +78,36 @@ The first four `analysis` fields are unchanged from v1; the rest are new.
 Also public: `GET /api/health`, `POST /api/intelligence/lookup`,
 `GET /api/intelligence/campaigns/{id}` (published campaigns only).
 
+### Admin panel
+
+**app.scamread.com/admin**: log in with the admin username and password.
+
+| Screen | What you can do |
+|---|---|
+| Dashboard | Checks per day, risky share, most-faked brands, domain endings and scam websites seen |
+| Brands | Add a brand and its real websites, or switch one off |
+| Warning signs | Add phrases in plain words (made into safe whole-word patterns) and risky domain endings; switch any off |
+| Campaigns | Group scam websites, numbers and wallets; publish to warn people by name |
+| Account | Change password (logs out other browsers) |
+
+Security: passwords are stored as scrypt hashes; the session cookie is
+httpOnly, `Secure`, `SameSite=Strict` and only its SHA-256 is stored; changes
+need an `X-ScamRead-Admin` header that other sites can't send; 5 wrong
+passwords lock an address out for 15 minutes; the page is `noindex` and
+`no-store`.
+
+The first account comes from `SCAMREAD_ADMIN_USER` and
+`SCAMREAD_ADMIN_PASSWORD_HASH` in `/etc/scamread.env`. Forgot the password? On
+the server:
+
+```bash
+cd /opt/scamread && sudo -u scamread venv/bin/python -m app.admin_cli set-password BAYARD
+```
+
 ### Admin endpoints
 
-Switched off unless `SCAMREAD_ADMIN_TOKEN` is set on the server. Send it as
-`Authorization: Bearer <token>`.
+The panel uses these. Scripts can also call them with the server's admin token
+as `Authorization: Bearer <token>` (switched off if `SCAMREAD_ADMIN_TOKEN` is empty).
 
 | Endpoint | What it does |
 |---|---|
@@ -138,7 +164,9 @@ python -m pytest -q
 |---|---|---|
 | `SCAMREAD_ENV` | `production` | `development` shows `/docs` |
 | `SCAMREAD_DATABASE_PATH` | `data/scamread.db` | SQLite file |
-| `SCAMREAD_ADMIN_TOKEN` | *(empty: admin off)* | Token for admin endpoints |
+| `SCAMREAD_ADMIN_TOKEN` | *(empty: off)* | Token for scripts calling admin endpoints |
+| `SCAMREAD_ADMIN_USER` | *(empty)* | First admin panel username |
+| `SCAMREAD_ADMIN_PASSWORD_HASH` | *(empty)* | Its password hash (`python -m app.admin_cli hash`) |
 | `SCAMREAD_PRIVATE_PATTERNS_DIR` | *(empty)* | Folder of private pattern packs |
 | `SCAMREAD_CACHE_TTL_SECONDS` | `900` | Memory cache lifetime |
 | `SCAMREAD_RECORD_MIN_RISK_SCORE` | `40` | Lowest score whose shape is recorded |

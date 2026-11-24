@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="ScamRead helps you understand suspicious messages before you act."
+  >
+
+  <title>ScamRead — Understand suspicious messages before you act</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S8ZVKZM7C6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S8ZVKZM7C6');
+</script>
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', path='style.css') }}"
+  >
+
+</head>
+
+
+<body>
+
+  <main class="page-shell">
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+ <header class="app-header">
+      <a href="/" class="app-logo">SCAMREAD</a>
+
+      <a
+        href="https://scamread.com/blog/"
+        class="app-guides-link"
+      >
+        Read Scam Guides →
+      </a>
+    </header>
+
+
+    <header id="hero-header" class="site-header">
+
+
+      <h1>Is this a scam?</h1>
+
+      <p class="intro">
+    Paste a suspicious message and find out why it may be risky.
+</p>
+
+    </header>
+
+
+    <!-- =====================================================
+         ANALYZER
+    ====================================================== -->
+
+    <section class="analyzer-container">
+
+      <div
+        id="analyzer-card"
+        class="analyzer-card"
+      >
+
+
+        <!-- =================================================
+             INPUT STATE
+        ================================================== -->
+
+        <div id="input-view">
+
+          <p class="input-intro">
+  We'll check it for common scam patterns and warning signs.
+</p>
+
+
+
+
+          <form
+            id="analysis-form"
+            novalidate
+          >
+
+            <!-- <label for="suspicious-text">
+              Message, URL, or suspicious text
+            </label> -->
+
+
+            <textarea
+  id="suspicious-text"
+  name="suspicious-text"
+  rows="14"
+  maxlength="20000"
+  placeholder="Paste a message, URL, or suspicious text here..."
+></textarea>
+<p class="input-hint">
+    Works with SMS, WhatsApp messages, emails, job offers, and suspicious links.
+</p>
+
+            <div class="input-meta">
+
+              <p class="field-help">
+                Don't include passwords, OTPs,
+                bank account numbers, or other sensitive information.
+              </p>
+
+              <span id="character-count">
+                0 / 20000
+              </span>
+
+            </div>
+
+
+            <button
+              id="analyse-button"
+              type="submit"
+            >
+
+              <span class="button-label">
+                Analyse Message
+              </span>
+
+              <span
+                class="button-spinner"
+                aria-hidden="true"
+              ></span>
+
+            </button>
+
+          </form>
+
+
+          <!-- Safety reminder -->
+
+          <aside
+            class="safety-note"
+            aria-label="Safety reminder"
+          >
+
+            <strong>
+              When in doubt, pause.
+            </strong>
+
+            <p>
+              Do not click links, call unexpected numbers,
+              or send money until you verify the request
+              through an independent official channel.
+            </p>
+
+          </aside>
+
+        </div>
+
+
+        <!-- =================================================
+             RESULT STATE
+        ================================================== -->
+
+        <div
+          id="result-view"
+          hidden
+          aria-live="polite"
+        ></div>
+
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         FOOTER / CTA
+    ====================================================== -->
+
+    <footer class="site-footer">
+
+      <p>
+        ScamRead provides a rule-based risk assessment.
+        It does not guarantee that a message is legitimate
+        or fraudulent.
+      </p>
+
+    </footer>
+
+
+  </main>
+
+
+  <!-- =======================================================
+       JAVASCRIPT
+  ======================================================== -->
+
+  <script
+    defer
+    src="{{ url_for('static', path='script.js') }}"
+  ></script>
+
+</body>
+
+</html>

@@ -1,0 +1,971 @@
+:root {
+  color-scheme: dark;
+
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  background: #06101d;
+  color: #eef4ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+
+  background:
+    radial-gradient(
+      circle at top,
+      #102747 0,
+      #06101d 42rem
+    );
+
+  color: #eef4ff;
+}
+
+button,
+textarea {
+  font: inherit;
+}
+
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.page-shell {
+  width: min(100% - 2rem, 1000px);
+  margin: 0 auto;
+
+  padding: 4rem 0 2.5rem;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+/* 
+.site-header {
+  max-width: 850px;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+
+  color: #4caeff;
+
+  font-size: 0.85rem;
+  font-weight: 800;
+
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 1rem;
+
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  line-height: 1.05;
+
+  letter-spacing: -0.045em;
+}
+
+.intro {
+  max-width: 760px;
+  margin: 0 auto;
+
+  color: #aebfd4;
+
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+ */
+
+.site-header {
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 0 20px 2rem;
+  text-align: center;
+}
+
+.site-header .eyebrow {
+  margin: 0 0 0.55rem;
+
+  color: #4caeff;
+
+  font-size: 0.8rem;
+  font-weight: 800;
+
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.site-header h1 {
+  margin: 0 0 0.8rem;
+
+  font-size: clamp(2.8rem, 5vw, 3.6rem);
+  line-height: 1.05;
+
+  letter-spacing: -0.045em;
+}
+
+.site-header .intro {
+  max-width: 700px;
+  margin: 0 auto;
+
+  color: #aebfd4;
+
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   ANALYZER
+========================================================= */
+
+.analyzer-container {
+  width: min(100%, 900px);
+  margin: 0 auto;
+}
+
+.analyzer-card {
+  padding: 2rem;
+
+  border: 1px solid #294567;
+  border-radius: 1.15rem;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(10, 29, 50, 0.96),
+      rgba(7, 20, 35, 0.96)
+    );
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+
+/* =========================================================
+   INPUT VIEW
+========================================================= */
+
+.step-heading {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 0.85rem;
+
+  margin-bottom: 1.5rem;
+}
+
+.step-number {
+  display: inline-flex;
+
+  flex: 0 0 auto;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 2.25rem;
+  height: 2.25rem;
+
+  border-radius: 50%;
+
+  background: #1769df;
+  color: #ffffff;
+
+  font-size: 1rem;
+  font-weight: 800;
+
+  box-shadow:
+    0 6px 18px rgba(23, 105, 223, 0.25);
+}
+
+.step-heading h2 {
+  margin-bottom: 0.35rem;
+
+  font-size: 1.45rem;
+  line-height: 1.2;
+}
+
+.step-heading p {
+  margin-bottom: 0;
+
+  color: #9fb2c9;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+form {
+  margin-top: 0;
+}
+
+label {
+  display: block;
+
+  margin-bottom: 0.65rem;
+
+  color: #eef4ff;
+
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+textarea {
+  display: block;
+
+  width: 100%;
+  min-height: 16rem;
+
+  padding: 1rem;
+
+  resize: vertical;
+
+  border: 1px solid #3b5879;
+  border-radius: 0.8rem;
+
+  outline: none;
+
+  background: #071321;
+  color: #eef4ff;
+
+  line-height: 1.55;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+textarea::placeholder {
+  color: #71849b;
+}
+
+textarea:focus {
+  border-color: #4caeff;
+
+  box-shadow:
+    0 0 0 3px rgba(76, 174, 255, 0.14);
+}
+
+
+/* =========================================================
+   INPUT META
+========================================================= */
+
+.input-meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  margin-top: 0.65rem;
+}
+
+.input-intro {
+  margin: 0 0 0.85rem;
+
+  color: #9fb2c9;
+
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.field-help {
+  max-width: 700px;
+
+  margin-bottom: 0;
+
+  color: #899db6;
+
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+#character-count {
+  flex: 0 0 auto;
+
+  color: #8094ac;
+
+  font-size: 0.8rem;
+}
+
+.input-hint {
+    margin: 8px 0 0;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    opacity: 0.65;
+}
+
+/* =========================================================
+   ANALYSE BUTTON
+========================================================= */
+
+button {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 3.2rem;
+
+  margin-top: 1.25rem;
+  padding: 0.8rem 1rem;
+
+  border: 0;
+  border-radius: 0.7rem;
+
+  cursor: pointer;
+
+  background: #1769df;
+  color: #ffffff;
+
+  font-weight: 800;
+  font-size: 1rem;
+
+  transition:
+    background 0.15s ease,
+    transform 0.1s ease,
+    opacity 0.15s ease;
+}
+
+button:hover {
+  background: #2479f1;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:focus-visible {
+  outline: 3px solid #b8ddff;
+  outline-offset: 3px;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+
+/* =========================================================
+   LOADING SPINNER
+========================================================= */
+
+.button-spinner {
+  display: none;
+
+  width: 1rem;
+  height: 1rem;
+
+  margin-left: 0.6rem;
+
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+
+  border-radius: 50%;
+
+  animation: spin 0.8s linear infinite;
+}
+
+button[aria-busy="true"] .button-spinner {
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   SAFETY NOTE
+========================================================= */
+
+.safety-note {
+  margin-top: 1.25rem;
+  padding: 1rem 1.1rem;
+
+  border: 1px solid #3b3d36;
+  border-left: 3px solid #f5b943;
+
+  border-radius: 0.7rem;
+
+  background: rgba(20, 29, 36, 0.65);
+
+  color: #d9e4f5;
+
+  line-height: 1.55;
+}
+
+.safety-note strong {
+  display: block;
+
+  margin-bottom: 0.35rem;
+
+  color: #f5c14e;
+}
+
+.safety-note p {
+  margin-bottom: 0;
+
+  font-size: 0.9rem;
+}
+
+
+/* =========================================================
+   RESULT VIEW
+========================================================= */
+
+#result-view {
+  width: 100%;
+}
+
+#result-view[hidden] {
+  display: none;
+}
+
+.scam-report {
+  width: 100%;
+}
+
+
+/* =========================================================
+   REPORT HEADER
+========================================================= */
+
+.report-header {
+  margin-bottom: 1rem;
+}
+
+.report-label {
+  margin-bottom: 0.75rem;
+
+  color: #8fa5be;
+
+  font-size: 0.8rem;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.risk-result {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  padding: 1.2rem;
+
+  border: 1px solid #6b572d;
+  border-radius: 0.85rem;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(37, 31, 20, 0.9),
+      rgba(25, 23, 20, 0.85)
+    );
+}
+
+.risk-label {
+  display: block;
+
+  margin-bottom: 0.25rem;
+
+  color: #b7c6da;
+
+  font-size: 0.8rem;
+}
+
+.risk-result strong {
+  font-size: 1.6rem;
+}
+
+.risk-score {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 5.5rem;
+  height: 5.5rem;
+
+  flex: 0 0 auto;
+
+  border: 3px solid #f5a915;
+  border-radius: 50%;
+
+  color: #eef4ff;
+
+  font-size: 1.45rem;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   RISK LEVELS
+========================================================= */
+
+.risk-high {
+  border-color: #7b343d;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(57, 25, 31, 0.9),
+      rgba(30, 19, 23, 0.85)
+    );
+}
+
+.risk-high strong {
+  color: #ff7b86;
+}
+
+.risk-medium strong {
+  color: #ffb51b;
+}
+
+.risk-low {
+  border-color: #245b4a;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(18, 43, 36, 0.9),
+      rgba(13, 29, 26, 0.85)
+    );
+}
+
+.risk-low strong {
+  color: #51d69a;
+}
+
+.risk-low .risk-score {
+  border-color: #51d69a;
+}
+
+
+/* =========================================================
+   REPORT SECTIONS
+========================================================= */
+
+.report-section {
+  margin-top: 1rem;
+  padding: 1.15rem;
+
+  border: 1px solid #263e5c;
+  border-radius: 0.8rem;
+
+  background: rgba(8, 20, 35, 0.65);
+}
+
+.report-section h3 {
+  margin-bottom: 0.85rem;
+
+  font-size: 1rem;
+}
+
+
+/* =========================================================
+   RED FLAGS
+========================================================= */
+
+.red-flags {
+  margin: 0;
+
+  padding-left: 1.25rem;
+}
+
+.red-flags li {
+  margin-bottom: 0.55rem;
+
+  color: #dbe7f5;
+
+  line-height: 1.45;
+}
+
+.red-flags li:last-child {
+  margin-bottom: 0;
+}
+
+.red-flags li::marker {
+  color: #f5a915;
+}
+
+
+/* =========================================================
+   SCAM TYPES
+========================================================= */
+
+.report-tags {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 0.5rem;
+}
+
+.report-tag {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 0.5rem 0.75rem;
+
+  border: 1px solid #55428c;
+  border-radius: 0.6rem;
+
+  background: rgba(77, 53, 132, 0.35);
+
+  color: #d4b7ff;
+
+  font-weight: 700;
+}
+
+.report-muted {
+  margin-bottom: 0;
+
+  color: #8fa5be;
+}
+
+
+/* =========================================================
+   INDICATORS
+========================================================= */
+
+.indicator-group {
+  margin-top: 0.9rem;
+}
+
+.indicator-group:first-child {
+  margin-top: 0;
+}
+
+.indicator-group h4 {
+  margin-bottom: 0.45rem;
+
+  color: #d8e5f5;
+
+  font-size: 0.9rem;
+}
+
+.indicator-group ul {
+  margin: 0;
+
+  padding-left: 1.25rem;
+}
+
+.indicator-group li {
+  margin-bottom: 0.35rem;
+}
+
+code {
+  color: #62dc83;
+
+  overflow-wrap: anywhere;
+
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    monospace;
+}
+
+
+/* =========================================================
+   ADVICE
+========================================================= */
+
+.report-advice {
+  border-color: #294c43;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(13, 37, 32, 0.75),
+      rgba(9, 27, 24, 0.65)
+    );
+}
+
+.report-advice h3 {
+  color: #62dc9b;
+}
+
+.report-advice p {
+  margin-bottom: 0;
+
+  color: #d5e6e2;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   REPORT CTA
+========================================================= */
+
+.report-actions {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 0.75rem;
+
+  margin-top: 1rem;
+}
+
+.report-actions button,
+.report-actions a {
+  width: 100%;
+  min-height: 2.9rem;
+
+  margin-top: 0;
+}
+
+.report-actions a {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0.75rem 1rem;
+
+  border: 1px solid #3b5879;
+  border-radius: 0.7rem;
+
+  background: transparent;
+
+  color: #eef4ff;
+
+  font-weight: 800;
+
+  text-decoration: none;
+
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.report-actions a:hover {
+  border-color: #5a7393;
+
+  background: rgba(255, 255, 255, 0.04);
+}
+
+
+/* =========================================================
+   DISCLAIMER
+========================================================= */
+
+.report-disclaimer {
+  margin: 0.9rem 0 0;
+
+  color: #71859d;
+
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .page-shell {
+  width: min(100% - 2rem, 1000px);
+  margin: 0 auto;
+  padding: 2.25rem 0 2.5rem;
+}
+
+  .analyzer-card {
+    padding: 1.25rem;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  textarea {
+    min-height: 18rem;
+  }
+
+  .input-meta {
+    flex-direction: column;
+  }
+
+  .risk-result {
+    align-items: flex-start;
+  }
+
+  .risk-score {
+    width: 4.75rem;
+    height: 4.75rem;
+
+    font-size: 1.2rem;
+  }
+
+  .report-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+@media (max-width: 480px) {
+
+  .page-shell {
+    padding-top: 1.75rem;
+  }
+
+  .site-header {
+    margin-bottom: 1.5rem;
+  }
+
+  h1 {
+    font-size: 2.15rem;
+  }
+
+  .intro {
+    font-size: 0.95rem;
+  }
+
+  .analyzer-card {
+    padding: 1rem;
+  }
+
+  .step-heading h2 {
+    font-size: 1.25rem;
+  }
+
+  .step-number {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  textarea {
+    min-height: 16rem;
+
+    padding: 0.85rem;
+  }
+
+  .risk-result {
+    padding: 1rem;
+  }
+
+  .risk-result strong {
+    font-size: 1.35rem;
+  }
+
+  .risk-score {
+    width: 4.25rem;
+    height: 4.25rem;
+
+    border-width: 2px;
+
+    font-size: 1.05rem;
+  }
+
+  .report-section {
+    padding: 1rem;
+  }
+}
+
+.site-footer {
+    max-width: 760px;
+    margin: 24px auto 0;
+    padding: 0 20px 32px;
+    text-align: center;
+}
+
+.site-footer p {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    opacity: 0.5;
+}
+
+/* =====================================================
+   APP HEADER
+===================================================== */
+
+.app-header {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 2rem;
+  padding: 0.5rem 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-logo {
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.app-guides-link {
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+.app-guides-link:hover {
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .app-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .app-logo {
+    font-size: 1rem;
+  }
+
+  .app-guides-link {
+    font-size: 0.8rem;
+  }
+}

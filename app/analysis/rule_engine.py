@@ -1,322 +1,168 @@
 """
 Rule-based scam analysis.
 
-This module detects suspicious patterns and combines them
-into a weighted risk assessment.
+This module detects suspicious patterns and combines them into a weighted
+risk assessment. The scoring steps are the same as the original engine; the
+word lists and regexes now come from the pattern database (see patterns.py),
+compiled once instead of on every request.
 """
 
-import re
 from urllib.parse import urlparse
 
+from app.analysis import patterns as pattern_store
+from app.analysis.patterns import PatternSet
 
-def analyze(text: str, indicators) -> dict:
+# Stable IDs for red flags, used in anonymous pattern statistics.
+FLAG_IDS = {
+    "Uses urgent or pressure-based language": "urgency",
+    "Uses threats or consequences to pressure the recipient": "threat",
+    "Requests sensitive information such as an OTP, password, or PIN": "sensitive_request",
+    "Mentions sensitive information such as an OTP or verification code": "sensitive_mention",
+    "Contains a financial request or payment-related language": "financial",
+    "Uses KYC or account-verification language": "kyc",
+    "Contains a URL": "url",
+    "Uses a delivery or parcel problem to request payment or direct the recipient to a link": "delivery",
+    "Combines a delivery problem, payment request, and external link": "delivery_payment_link",
+    "Uses a suspicious or unusual domain": "suspicious_tld",
+    "The message claims to represent a known brand but uses a different domain": "brand_mismatch",
+    "Uses a generic greeting": "generic_greeting",
+    "Combines banking context with a request for sensitive information": "banking_sensitive",
+    "Combines banking context with an external link": "banking_link",
+    "Combines KYC pressure, account consequences, and a link": "kyc_threat_link",
+}
+
+
+def _hostname(url: str) -> str:
+    candidate = url if url.startswith(("http://", "https://")) else "http://" + url
+    try:
+        return (urlparse(candidate).hostname or "").lower()
+    except ValueError:
+        return ""
+
+
+def _any_regex(compiled, text: str) -> bool:
+    return any(p.search(text) for p in compiled)
+
+
+# Bare "domains" that are really file names, not websites.
+FILE_EXTENSIONS = {
+    "pdf", "txt", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "csv", "jpg", "jpeg",
+    "png", "gif", "webp", "heic", "mp3", "mp4", "mov", "avi", "html", "htm", "php",
+    "js", "py", "json", "xml", "apk", "exe", "rar", "7z",
+}
+
+
+def bare_link_hosts(indicators) -> list[str]:
+    """Website addresses written without http(s)://, e.g. 'sbi-kyc.tk/verify'."""
+    url_hosts = {_hostname(url) for url in indicators.urls}
+    return [
+        domain
+        for domain in indicators.domains
+        if domain not in url_hosts and domain.rsplit(".", 1)[-1] not in FILE_EXTENSIONS
+    ]
+
+
+def analyze(
+    text: str,
+    indicators,
+    patterns: PatternSet | None = None,
+    bare_domains_as_links: bool = True,
+) -> dict:
+    """Score a message.
+
+    bare_domains_as_links=False reproduces the original engine exactly (only
+    http/https links counted); True also counts addresses written without it.
+    """
+    p = patterns or pattern_store.current()
     text_lower = text.lower()
 
     score = 0
     red_flags = []
     scam_types = []
 
-    # ---------------------------------------------------------
     # 1. Urgency / pressure
-    # ---------------------------------------------------------
-
-    urgency_patterns = [
-        r"\burgent\b",
-        r"\bimmediately\b",
-        r"\bact now\b",
-        r"\bright away\b",
-        r"\bwithin\s+\d+\s*(?:hours?|hrs?)\b",
-        r"\bfinal warning\b",
-        r"\basap\b",
-        r"\btoday only\b",
-    ]
-
-    if any(re.search(pattern, text_lower) for pattern in urgency_patterns):
+    urgency_hits = sum(1 for pattern in p.r("urgency") if pattern.search(text_lower))
+    if urgency_hits:
         score += 10
         red_flags.append("Uses urgent or pressure-based language")
 
-    # ---------------------------------------------------------
     # 2. Threats / consequences
-    # ---------------------------------------------------------
-
-    threat_patterns = [
-        r"\baccount.*\bclosed\b",
-        r"\baccount.*\bsuspended\b",
-        r"\baccount.*\bblocked\b",
-        r"\bpermanent suspension\b",
-        r"\baccount closure\b",
-        r"\blegal action\b",
-        r"\bpolice action\b",
-        r"\barrest\b",
-        r"\bpenalty\b",
-        r"\bfine\b",
-    ]
-
-    if any(re.search(pattern, text_lower) for pattern in threat_patterns):
+    threat_hits = sum(1 for pattern in p.r("threat") if pattern.search(text_lower))
+    if threat_hits:
         score += 15
-        red_flags.append(
-            "Uses threats or consequences to pressure the recipient"
-        )
+        red_flags.append("Uses threats or consequences to pressure the recipient")
 
-    # ---------------------------------------------------------
     # 3. Sensitive information
-    # ---------------------------------------------------------
-
-    sensitive_terms = [
-        "otp",
-        "one-time password",
-        "password",
-        "bank details",
-        "card number",
-        "cvv",
-        "pin",
-        "verification code",
-    ]
-
-    sensitive_mentioned = any(
-        term in text_lower for term in sensitive_terms
-    )
-
-    sensitive_request_patterns = [
-        r"\b(?:share|send|provide|give|tell|confirm|enter|submit|verify)\b"
-        r".{0,40}\b(?:otp|one[- ]time password|password|cvv|pin|verification code)\b",
-
-        r"\b(?:otp|one[- ]time password|password|cvv|pin|verification code)\b"
-        r".{0,40}\b(?:share|send|provide|give|tell|confirm|enter|submit|verify)\b",
-    ]
-
-    sensitive_requested = any(
-        re.search(pattern, text_lower)
-        for pattern in sensitive_request_patterns
-    )
+    sensitive_mentioned = any(term in text_lower for term in p.t("sensitive_term"))
+    sensitive_requested = _any_regex(p.r("sensitive_request"), text_lower)
 
     if sensitive_requested:
         score += 40
-        red_flags.append(
-            "Requests sensitive information such as an OTP, password, or PIN"
-        )
+        red_flags.append("Requests sensitive information such as an OTP, password, or PIN")
     elif sensitive_mentioned:
         score += 10
-        red_flags.append(
-            "Mentions sensitive information such as an OTP or verification code"
-        )
+        red_flags.append("Mentions sensitive information such as an OTP or verification code")
 
-    # ---------------------------------------------------------
     # 4. Financial request
-    # ---------------------------------------------------------
-
-    financial_patterns = [
-        r"\bsend money\b",
-    r"\btransfer money\b",
-    r"\bmake a payment\b",
-    r"\bpay now\b",
-    r"\bpay\s+(?:₹|\$|€|£)?\s*\d+",
-    r"\bpayment\b",
-    r"\bdeposit\b",
-    r"\bfee\b",
-    r"\bregistration fee\b",
-    r"\bdelivery fee\b",
-    r"\bcustoms fee\b",
-    r"\bpayment required\b",
-    ]
-
-    if any(re.search(pattern, text_lower) for pattern in financial_patterns):
+    financial = _any_regex(p.r("financial"), text_lower)
+    if financial:
         score += 20
-        red_flags.append(
-            "Contains a financial request or payment-related language"
-        )
+        red_flags.append("Contains a financial request or payment-related language")
 
-   
-
-    # ---------------------------------------------------------
     # 5. Banking context
-    # ---------------------------------------------------------
-
-    banking_terms = [
-        "bank",
-        "bank account",
-        "customer care",
-        "customer support",
-        "credit card",
-        "debit card",
-        "net banking",
-        "internet banking",
-        "kyc",
-        "account",
-    ]
-
-    banking_context = any(
-        term in text_lower for term in banking_terms
-    )
-
+    banking_context = any(term in text_lower for term in p.t("banking_term"))
     if banking_context:
         score += 5
 
-    # ---------------------------------------------------------
     # 6. KYC / verification pretext
-    # ---------------------------------------------------------
-
-    kyc_patterns = [
-        r"\bkyc\b",
-        r"\bkyc expiry\b",
-        r"\bkyc expired\b",
-        r"\bverify your account\b",
-        r"\bverification required\b",
-        r"\bcomplete verification\b",
-        r"\bupdate your details\b",
-    ]
-
-    kyc_context = any(
-        re.search(pattern, text_lower)
-        for pattern in kyc_patterns
-    )
-
+    kyc_context = _any_regex(p.r("kyc"), text_lower)
     if kyc_context:
         score += 10
-        red_flags.append(
-            "Uses KYC or account-verification language"
-        )
+        red_flags.append("Uses KYC or account-verification language")
 
-    # ---------------------------------------------------------
-    # 7. URL
-    # ---------------------------------------------------------
-
-    has_url = bool(indicators.urls)
-
+    # 7. URL (or a website address written without http/https)
+    hostnames = [_hostname(url) for url in indicators.urls]
+    if bare_domains_as_links:
+        hostnames += bare_link_hosts(indicators)
+    has_url = bool(hostnames)
     if has_url:
         score += 5
         red_flags.append("Contains a URL")
 
+    # Delivery scam context
+    delivery_context = any(term in text_lower for term in p.t("delivery_context"))
+    delivery_payment = financial
+    delivery_problem = any(phrase in text_lower for phrase in p.t("delivery_problem"))
 
- # ---------------------------------------------------------
-    # 5. Delivery scam context
-    # ---------------------------------------------------------
-
-    delivery_context = any(
-        term in text_lower
-        for term in [
-            "parcel",
-            "package",
-            "delivery",
-            "shipment",
-            "courier",
-            "consignment",
-            "tracking",
-        ]
-    )
-
-    delivery_payment = any(
-        re.search(pattern, text_lower)
-        for pattern in financial_patterns
-    )
-
-    delivery_problem = any(
-        phrase in text_lower
-        for phrase in [
-            "could not be delivered",
-            "delivery failed",
-            "address is incomplete",
-            "address is incorrect",
-            "reschedule delivery",
-            "delivery fee",
-            "customs fee",
-        ]
-    )
-
-    if delivery_context and (
-        delivery_payment
-        or delivery_problem
-        or has_url
-    ):
+    if delivery_context and (delivery_payment or delivery_problem or has_url):
         score += 35
         red_flags.append(
             "Uses a delivery or parcel problem to request payment or direct the recipient to a link"
         )
-
         if delivery_payment and has_url:
             score += 15
-            red_flags.append(
-                "Combines a delivery problem, payment request, and external link"
-            )
-    # ---------------------------------------------------------
+            red_flags.append("Combines a delivery problem, payment request, and external link")
+
     # 8. Suspicious URL characteristics
-    # ---------------------------------------------------------
-
-    suspicious_tlds = {
-        ".tk",
-        ".ml",
-        ".ga",
-        ".cf",
-        ".gq",
-    }
-
-    suspicious_url = False
-
-    for url in indicators.urls:
-        candidate = url
-
-        if not candidate.startswith(("http://", "https://")):
-            candidate = "http://" + candidate
-
-        try:
-            hostname = urlparse(candidate).hostname or ""
-        except ValueError:
-            hostname = ""
-
-        hostname = hostname.lower()
-
-        if any(hostname.endswith(tld) for tld in suspicious_tlds):
-            suspicious_url = True
-            break
-
+    suspicious_url = any(
+        any(hostname.endswith(tld) for tld in p.suspicious_tlds) for hostname in hostnames
+    )
     if suspicious_url:
         score += 15
-        red_flags.append(
-            "Uses a suspicious or unusual domain"
-        )
+        red_flags.append("Uses a suspicious or unusual domain")
 
-    # ---------------------------------------------------------
     # 9. Brand impersonation
-    # ---------------------------------------------------------
-
-    known_brands = {
-        "sbi": ["sbi.co.in"],
-        "state bank of india": ["sbi.co.in"],
-        "hdfc": ["hdfcbank.com"],
-        "hdfc bank": ["hdfcbank.com"],
-        "icici": ["icicibank.com"],
-        "icici bank": ["icicibank.com"],
-        "axis": ["axisbank.com"],
-        "axis bank": ["axisbank.com"],
-        "kotak": ["kotak.com"],
-        "kotak mahindra": ["kotak.com"],
-    }
-
     claimed_brand = None
-    legitimate_domains = []
-
-    for brand, domains in known_brands.items():
-        if re.search(rf"\b{re.escape(brand)}\b", text_lower):
-            claimed_brand = brand
-            legitimate_domains = domains
+    legitimate_domains: tuple[str, ...] = ()
+    for brand in p.brands:
+        if brand.pattern.search(text_lower):
+            claimed_brand = brand.name
+            legitimate_domains = brand.legit_domains
             break
 
     brand_mismatch = False
-
     if claimed_brand and has_url:
-        for url in indicators.urls:
-            candidate = url
-
-            if not candidate.startswith(("http://", "https://")):
-                candidate = "http://" + candidate
-
-            try:
-                hostname = urlparse(candidate).hostname or ""
-            except ValueError:
-                hostname = ""
-
-            hostname = hostname.lower()
-
+        for hostname in hostnames:
             if not any(
                 hostname == domain or hostname.endswith("." + domain)
                 for domain in legitimate_domains
@@ -330,91 +176,46 @@ def analyze(text: str, indicators) -> dict:
             "The message claims to represent a known brand but uses a different domain"
         )
 
-    # ---------------------------------------------------------
     # 10. Generic greeting
-    # ---------------------------------------------------------
-
-    generic_greetings = [
-        "dear user",
-        "dear customer",
-        "dear sir",
-        "dear madam",
-        "valued customer",
-    ]
-
-    if any(greeting in text_lower for greeting in generic_greetings):
+    if any(greeting in text_lower for greeting in p.t("generic_greeting")):
         score += 5
         red_flags.append("Uses a generic greeting")
 
-    # ---------------------------------------------------------
     # 11. Combination rules
-    # ---------------------------------------------------------
-
-    # Banking + OTP request is a particularly strong signal.
     if banking_context and sensitive_requested:
         score += 30
-        red_flags.append(
-            "Combines banking context with a request for sensitive information"
-        )
+        red_flags.append("Combines banking context with a request for sensitive information")
 
-    # Banking + URL.
     if banking_context and has_url:
         score += 10
-        red_flags.append(
-            "Combines banking context with an external link"
-        )
+        red_flags.append("Combines banking context with an external link")
 
-    # Banking + threat + URL.
     if banking_context and has_url and brand_mismatch:
         score += 15
 
-    # KYC + threat + URL.
-    if kyc_context and has_url and any(
-        re.search(pattern, text_lower)
-        for pattern in threat_patterns
-    ):
+    if kyc_context and has_url and threat_hits:
         score += 15
-        red_flags.append(
-            "Combines KYC pressure, account consequences, and a link"
-        )
+        red_flags.append("Combines KYC pressure, account consequences, and a link")
 
-    # ---------------------------------------------------------
     # 12. Scam categories
-    # ---------------------------------------------------------
-
-    if sensitive_requested and banking_context:
-        scam_types.append("credential_phishing")
-    elif sensitive_requested:
+    if sensitive_requested:
         scam_types.append("credential_phishing")
 
     if banking_context and (has_url or sensitive_requested or kyc_context):
         scam_types.append("banking_phishing")
 
-    if any(
-        word in text_lower
-        for word in ["investment", "profit", "return", "crypto"]
-    ):
+    if any(word in text_lower for word in p.t("type_investment")):
         scam_types.append("investment_or_crypto")
 
-    if any(
-        word in text_lower
-        for word in ["job", "salary", "vacancy", "hiring"]
-    ):
+    if any(word in text_lower for word in p.t("type_job")):
         scam_types.append("job_scam")
 
-    if any(
-        word in text_lower
-        for word in ["parcel", "package", "delivery", "shipment"]
-    ):
+    if any(word in text_lower for word in p.t("type_delivery")):
         scam_types.append("delivery_scam")
 
-    # Remove duplicate categories while preserving order.
     scam_types = list(dict.fromkeys(scam_types))
 
-    # ---------------------------------------------------------
     # 13. Final score and risk level
-    # ---------------------------------------------------------
-
     score = min(score, 100)
 
     if score >= 70:
@@ -425,13 +226,21 @@ def analyze(text: str, indicators) -> dict:
         risk_level = "low"
 
     if not red_flags:
-        red_flags.append(
-            "No obvious suspicious patterns detected"
-        )
+        red_flags.append("No obvious suspicious patterns detected")
+
+    # Pressure score: how hard the message pushes (urgency + threats), 0-100.
+    urgency_score = min(100, 25 * urgency_hits + 20 * threat_hits)
 
     return {
         "risk_score": score,
         "risk_level": risk_level,
         "red_flags": red_flags,
         "suspected_types": scam_types,
+        # Added in v2 (the four keys above are unchanged from v1):
+        "urgency_score": urgency_score,
+        "claimed_brand": claimed_brand,
+        "brand_mismatch": brand_mismatch,
+        "official_domains": list(legitimate_domains) if brand_mismatch else [],
+        "link_domains": [h for h in dict.fromkeys(hostnames) if h],
+        "red_flag_ids": [FLAG_IDS[f] for f in red_flags if f in FLAG_IDS],
     }

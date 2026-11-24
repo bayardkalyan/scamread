@@ -1,0 +1,28 @@
+# /etc/systemd/system/scamread.service
+[Unit]
+Description=ScamRead scam checker (app.scamread.com)
+After=network.target
+
+[Service]
+User=scamread
+Group=scamread
+WorkingDirectory=/opt/scamread
+EnvironmentFile=-/etc/scamread.env
+ExecStart=/opt/scamread/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1 --no-access-log --no-server-header --proxy-headers
+Restart=always
+RestartSec=3
+
+# Hardening: the app can only write to its data folder.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/scamread/data
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

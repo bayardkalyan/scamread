@@ -1,214 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Is this a scam? Free scam message checker | ScamRead</title>
+  <meta name="description" content="Paste a suspicious SMS, WhatsApp message, email or link and see the warning signs in seconds. Free, private: your message is never saved.">
+  <meta name="theme-color" content="#06090C">
+  <link rel="canonical" href="https://app.scamread.com/">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ScamRead">
+  <meta property="og:title" content="Is this a scam? Check a suspicious message | ScamRead">
+  <meta property="og:description" content="Paste a suspicious message and see the warning signs in seconds. Your message is never saved.">
+  <meta property="og:url" content="https://app.scamread.com/">
+  <meta property="og:image" content="https://app.scamread.com{{ static('img/icon-512.png') }}">
 
-  <meta
-    name="description"
-    content="ScamRead helps you understand suspicious messages before you act."
-  >
+  <link rel="preload" href="/static/fonts/inter-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ static('css/app.css') }}">
+  <link rel="icon" href="{{ static('img/favicon.ico') }}" sizes="any">
+  <link rel="icon" href="{{ static('img/icon-192.png') }}" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="{{ static('img/apple-touch-icon.png') }}">
 
-  <title>ScamRead — Understand suspicious messages before you act</title>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-S8ZVKZM7C6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-S8ZVKZM7C6');
-</script>
-  <link
-    rel="stylesheet"
-    href="{{ url_for('static', path='style.css') }}"
-  >
-
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-S8ZVKZM7C6"></script>
+  <script src="{{ static('js/ga.js') }}"></script>
+  <script defer src="{{ static('js/app.js') }}"></script>
 </head>
 
-
 <body>
+  <a class="skip-link" href="#suspicious-text">Skip to the checker</a>
 
-  <main class="page-shell">
-
-
-    <!-- =====================================================
-         HEADER
-    ====================================================== -->
- <header class="app-header">
-      <a href="/" class="app-logo">SCAMREAD</a>
-
-      <a
-        href="https://scamread.com/blog/"
-        class="app-guides-link"
-      >
-        Read Scam Guides →
+  <header class="site-header">
+    <div class="wrap site-header-inner">
+      <a class="brand" href="https://scamread.com/" aria-label="ScamRead home">
+        <picture>
+          <source srcset="{{ static('img/scamread-logo.webp') }}" type="image/webp">
+          <img src="{{ static('img/scamread-logo.png') }}" alt="ScamRead" width="180" height="26">
+        </picture>
+        <span class="brand-tagline">Cybersecurity research for the AI era.</span>
       </a>
-    </header>
 
+      <nav class="site-nav" aria-label="Main">
+        <a href="https://scamread.com/">Home</a>
+        <a href="https://scamread.com/services/">Services</a>
+        <a href="https://scamread.com/cyber-news/">Cyber News</a>
+        <a href="https://scamread.com/learn/">Learn</a>
+        <a href="https://scamread.com/about/">About</a>
+        <a href="https://scamread.com/contact/">Contact</a>
+      </nav>
 
-    <header id="hero-header" class="site-header">
+      <details class="mobile-nav">
+        <summary aria-label="Open menu"><span></span><span></span><span></span></summary>
+        <nav aria-label="Main (mobile)">
+          <a href="https://scamread.com/">Home</a>
+          <a href="https://scamread.com/services/">Services</a>
+          <a href="https://scamread.com/cyber-news/">Cyber News</a>
+          <a href="https://scamread.com/learn/">Learn</a>
+          <a href="https://scamread.com/about/">About</a>
+          <a href="https://scamread.com/contact/">Contact</a>
+        </nav>
+      </details>
+    </div>
+  </header>
 
-
-      <h1>Is this a scam?</h1>
-
-      <p class="intro">
-    Paste a suspicious message and find out why it may be risky.
-</p>
-
-    </header>
-
-
-    <!-- =====================================================
-         ANALYZER
-    ====================================================== -->
-
-    <section class="analyzer-container">
-
-      <div
-        id="analyzer-card"
-        class="analyzer-card"
-      >
-
-
-        <!-- =================================================
-             INPUT STATE
-        ================================================== -->
-
-        <div id="input-view">
-
-          <p class="input-intro">
-  We'll check it for common scam patterns and warning signs.
-</p>
-
-
-
-
-          <form
-            id="analysis-form"
-            novalidate
-          >
-
-            <!-- <label for="suspicious-text">
-              Message, URL, or suspicious text
-            </label> -->
-
-
-            <textarea
-  id="suspicious-text"
-  name="suspicious-text"
-  rows="14"
-  maxlength="20000"
-  placeholder="Paste a message, URL, or suspicious text here..."
-></textarea>
-<p class="input-hint">
-    Works with SMS, WhatsApp messages, emails, job offers, and suspicious links.
-</p>
-
-            <div class="input-meta">
-
-              <p class="field-help">
-                Don't include passwords, OTPs,
-                bank account numbers, or other sensitive information.
-              </p>
-
-              <span id="character-count">
-                0 / 20000
-              </span>
-
-            </div>
-
-
-            <button
-              id="analyse-button"
-              type="submit"
-            >
-
-              <span class="button-label">
-                Analyse Message
-              </span>
-
-              <span
-                class="button-spinner"
-                aria-hidden="true"
-              ></span>
-
-            </button>
-
-          </form>
-
-
-          <!-- Safety reminder -->
-
-          <aside
-            class="safety-note"
-            aria-label="Safety reminder"
-          >
-
-            <strong>
-              When in doubt, pause.
-            </strong>
-
-            <p>
-              Do not click links, call unexpected numbers,
-              or send money until you verify the request
-              through an independent official channel.
-            </p>
-
-          </aside>
-
-        </div>
-
-
-        <!-- =================================================
-             RESULT STATE
-        ================================================== -->
-
-        <div
-          id="result-view"
-          hidden
-          aria-live="polite"
-        ></div>
-
-
-      </div>
-
+  <main class="wrap page">
+    <section id="hero-header" class="hero">
+      <p class="label">Free scam checker</p>
+      <h1>Is this a <span class="hl">scam?</span></h1>
+      <p class="intro">Paste a suspicious message or link. We check it for common scam tricks and explain every warning sign in plain words.</p>
     </section>
 
+    <section class="checker" aria-label="Scam checker">
+      <div id="analyzer-card" class="panel checker-card">
 
-    <!-- =====================================================
-         FOOTER / CTA
-    ====================================================== -->
+        <div id="input-view">
+          <form id="analysis-form" novalidate>
+            <label class="field-label" for="suspicious-text">Message, link or email</label>
+            <textarea
+              id="suspicious-text"
+              name="suspicious-text"
+              rows="9"
+              maxlength="20000"
+              spellcheck="false"
+              placeholder="Example: Dear customer, your SBI account will be blocked today. Update KYC at sbi-kyc.tk/verify"
+            ></textarea>
 
-    <footer class="site-footer">
+            <div class="input-meta">
+              <p class="field-help">Works with SMS, WhatsApp, email, job offers and links. Remove any OTP, PIN or account number before pasting.</p>
+              <span id="character-count" aria-live="off">0 / 20000</span>
+            </div>
 
-      <p>
-        ScamRead provides a rule-based risk assessment.
-        It does not guarantee that a message is legitimate
-        or fraudulent.
-      </p>
+            <p id="form-error" class="form-error" role="alert" hidden></p>
 
-    </footer>
+            <div class="form-actions">
+              <button id="analyse-button" class="btn btn-primary" type="submit">
+                <span class="button-label">Check this message</span>
+                <span class="button-spinner" aria-hidden="true"></span>
+              </button>
+              <p class="privacy-note"><span class="dot" aria-hidden="true"></span>Checked in memory. Your message is never saved.</p>
+            </div>
+          </form>
+        </div>
 
+        <div id="result-view" hidden aria-live="polite" tabindex="-1"></div>
+      </div>
 
+      <aside class="safety-note" aria-label="Safety reminder">
+        <strong>When in doubt, pause.</strong>
+        <p>Don't click links, call unexpected numbers or send money until you check the request through an official website or helpline you found yourself.</p>
+      </aside>
+    </section>
+
+    <section class="how" aria-labelledby="how-title">
+      <p class="label" id="how-title">How it works</p>
+      <ol class="steps">
+        <li><span class="step-n">01</span><h2>Paste</h2><p>Copy the message, email or link that worries you.</p></li>
+        <li><span class="step-n">02</span><h2>We check</h2><p>Urgency, threats, OTP requests, fake brand links, risky domain endings and known scam campaigns.</p></li>
+        <li><span class="step-n">03</span><h2>You decide</h2><p>Get a risk score with each warning sign explained, and what to do next.</p></li>
+      </ol>
+    </section>
+
+    <section class="cta-row" aria-label="More from ScamRead">
+      <a class="panel cta" href="https://scamread.com/cyber-news/">
+        <span class="label">Cyber News</span>
+        <h2>Today's scam and security news</h2>
+        <p>Short, curated updates on new scams and threats.</p>
+      </a>
+      <a class="panel cta" href="https://scamread.com/services/">
+        <span class="label">For businesses</span>
+        <h2>Is someone impersonating your brand?</h2>
+        <p>We find fake pages, apps and accounts using your name.</p>
+      </a>
+      <a class="panel cta" href="https://scamread.com/learn/">
+        <span class="label">Learn</span>
+        <h2>Spot scams yourself</h2>
+        <p>Guides, courses and ebooks in simple language.</p>
+      </a>
+    </section>
   </main>
 
-
-  <!-- =======================================================
-       JAVASCRIPT
-  ======================================================== -->
-
-  <script
-    defer
-    src="{{ url_for('static', path='script.js') }}"
-  ></script>
-
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>ScamRead is an independent AI cybersecurity research company. It is not a government site or a law firm, and nothing here is legal advice. We will never ask for your OTP, PIN or passwords.</p>
+      <p class="footer-meta">
+        <span>&copy; 2026 ScamRead</span>
+        <a href="https://scamread.com/">scamread.com</a>
+        <a href="https://github.com/bayardkalyan/scamread">Open source</a>
+      </p>
+    </div>
+  </footer>
 </body>
-
 </html>

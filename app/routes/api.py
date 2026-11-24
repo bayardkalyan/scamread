@@ -1,53 +1,31 @@
-# """JSON API routes for the ScamRead analyzer."""
+"""Public JSON API for the ScamRead checker."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 
-from app.extractors.regex import count_indicators, extract_indicators
-from app.models.ioc import AnalyzeRequest, ExtractionResponse
-# from app.analysis.rule_engine import analyze
+from app.analysis import patterns as pattern_store
+from app.analysis.pipeline import analyze_json
+from app.models.ioc import AnalyzeRequest
 
-from app.analysis.extractor import run as extract
-# from app.analysis.rule_engine import analyze
-from app.analysis.pipeline import analyze
-
+APP_VERSION = "2.0.0"
 
 router = APIRouter(prefix="/api", tags=["analysis"])
 
 
-# # @router.post("/analyze", response_model=ExtractionResponse)
-# # def analyze_text(payload: AnalyzeRequest) -> ExtractionResponse:
-# #     """Extract IOCs from text without retaining the user's submitted content."""
-# #     indicators = extract_indicators(payload.text)
-# #     return ExtractionResponse(
-# #         indicators=indicators,
-# #         total_indicators=count_indicators(indicators),
-# #     )
-
-@router.post("/test/rule-engine")
-def test_rule_engine(request: AnalyzeRequest):
-
-    extraction = extract(request.text)
-
-    result = analyze(
-        request.text,
-        extraction["indicators"],
+@router.post("/analyze")
+async def analyze_text(payload: AnalyzeRequest) -> Response:
+    """Run the full analysis. The message is checked in memory and never saved."""
+    return Response(
+        content=analyze_json(payload.text),
+        media_type="application/json",
+        headers={"Cache-Control": "no-store"},
     )
 
+
+@router.get("/health")
+async def health() -> dict:
+    """Simple liveness check for monitoring."""
     return {
-        "input": request.text,
-        "extraction": extraction,
-        "analysis": result,
+        "status": "ok",
+        "version": APP_VERSION,
+        "patterns_version": pattern_store.current().version,
     }
-
-# from fastapi import APIRouter
-
-
-# from app.models.ioc import AnalyzeRequest
-
-# router = APIRouter(prefix="/api", tags=["analysis"])
-
-
-@router.post("/analyze")
-def analyze_text(payload: AnalyzeRequest):
-    """Run the complete ScamRead analysis pipeline."""
-    return analyze(payload.text)

@@ -1,6 +1,10 @@
-"""Routes that capture analyst-labelled raw scam intelligence."""
+"""Scam-intelligence routes.
 
-from fastapi import APIRouter
+Public: look up published campaigns (read-only).
+Admin only: capture analyst-labelled observations.
+"""
+
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.extractors.regex import count_indicators, extract_indicators
 from app.models.intelligence import (
@@ -10,16 +14,21 @@ from app.models.intelligence import (
     IntelligenceCaptureResponse,
 )
 from app.models.ioc import AnalyzeRequest
+from app.security.admin import require_admin
 from app.services.campaign_store import find_campaign_matches, get_published_campaign
 from app.services.intelligence_store import capture_observation
-
 
 router = APIRouter(prefix="/api/intelligence", tags=["intelligence"])
 
 
-@router.post("/capture", response_model=IntelligenceCaptureResponse, status_code=201)
+@router.post(
+    "/capture",
+    response_model=IntelligenceCaptureResponse,
+    status_code=201,
+    dependencies=[Depends(require_admin)],
+)
 def capture_intelligence(payload: IntelligenceCaptureRequest) -> IntelligenceCaptureResponse:
-    """Extract and persist an unreviewed observation without storing its full message text."""
+    """Analyst only: save indicators and labels for review (the message text is not saved)."""
     indicators = extract_indicators(payload.text)
     observation_id, captured_at = capture_observation(payload, indicators)
     return IntelligenceCaptureResponse(
@@ -43,10 +52,8 @@ def lookup_campaigns(payload: AnalyzeRequest) -> CampaignLookupResponse:
 
 @router.get("/campaigns/{campaign_id}", response_model=CampaignSummary)
 def get_campaign(campaign_id: str) -> CampaignSummary:
-    """Return a published campaign page payload without exposing unreviewed records."""
+    """Return a published campaign without exposing unreviewed records."""
     campaign = get_published_campaign(campaign_id)
     if campaign is None:
-        from fastapi import HTTPException
-
         raise HTTPException(status_code=404, detail="Published campaign not found.")
     return campaign

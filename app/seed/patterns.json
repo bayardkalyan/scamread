@@ -1,0 +1,830 @@
+{
+  "_about": "ScamRead starter patterns. 'core' reproduces the original rule engine exactly; 'extended' adds more brands, phrases and abused domain endings. Values are lowercase; regex categories use Python regular expressions. Private packs use the same format and live outside this repository.",
+  "version": "2026.11.24",
+  "rules": [
+    {
+      "set": "core",
+      "category": "urgency",
+      "value": "\\burgent\\b"
+    },
+    {
+      "set": "core",
+      "category": "urgency",
+      "value": "\\bimmediately\\b"
+    },
+    {
+      "set": "core",
+      "category": "urgency",
+      "value": "\\bact now\\b"
+    },
+    {
+      "set": "core",
+      "category": "urgency",
+      "value": "\\bright away\\b"
+    },
+    {
+      "set": "core",
+      "category": "urgency",
+      "value": "\\bwithin\\s+\\d+\\s*(?:hours?|hrs?)\\b"
+    },
+    {
+      "set": "core",
+      "category": "urgency",
+      "value": "\\bfinal warning\\b"
+    },
+    {
+      "set": "core",
+      "category": "urgency",
+      "value": "\\basap\\b"
+    },
+    {
+      "set": "core",
+      "category": "urgency",
+      "value": "\\btoday only\\b"
+    },
+    {
+      "set": "core",
+      "category": "threat",
+      "value": "\\baccount.*\\bclosed\\b"
+    },
+    {
+      "set": "core",
+      "category": "threat",
+      "value": "\\baccount.*\\bsuspended\\b"
+    },
+    {
+      "set": "core",
+      "category": "threat",
+      "value": "\\baccount.*\\bblocked\\b"
+    },
+    {
+      "set": "core",
+      "category": "threat",
+      "value": "\\bpermanent suspension\\b"
+    },
+    {
+      "set": "core",
+      "category": "threat",
+      "value": "\\baccount closure\\b"
+    },
+    {
+      "set": "core",
+      "category": "threat",
+      "value": "\\blegal action\\b"
+    },
+    {
+      "set": "core",
+      "category": "threat",
+      "value": "\\bpolice action\\b"
+    },
+    {
+      "set": "core",
+      "category": "threat",
+      "value": "\\barrest\\b"
+    },
+    {
+      "set": "core",
+      "category": "threat",
+      "value": "\\bpenalty\\b"
+    },
+    {
+      "set": "core",
+      "category": "threat",
+      "value": "\\bfine\\b"
+    },
+    {
+      "set": "core",
+      "category": "sensitive_term",
+      "value": "otp"
+    },
+    {
+      "set": "core",
+      "category": "sensitive_term",
+      "value": "one-time password"
+    },
+    {
+      "set": "core",
+      "category": "sensitive_term",
+      "value": "password"
+    },
+    {
+      "set": "core",
+      "category": "sensitive_term",
+      "value": "bank details"
+    },
+    {
+      "set": "core",
+      "category": "sensitive_term",
+      "value": "card number"
+    },
+    {
+      "set": "core",
+      "category": "sensitive_term",
+      "value": "cvv"
+    },
+    {
+      "set": "core",
+      "category": "sensitive_term",
+      "value": "pin"
+    },
+    {
+      "set": "core",
+      "category": "sensitive_term",
+      "value": "verification code"
+    },
+    {
+      "set": "core",
+      "category": "sensitive_request",
+      "value": "\\b(?:share|send|provide|give|tell|confirm|enter|submit|verify)\\b.{0,40}\\b(?:otp|one[- ]time password|password|cvv|pin|verification code)\\b"
+    },
+    {
+      "set": "core",
+      "category": "sensitive_request",
+      "value": "\\b(?:otp|one[- ]time password|password|cvv|pin|verification code)\\b.{0,40}\\b(?:share|send|provide|give|tell|confirm|enter|submit|verify)\\b"
+    },
+    {
+      "set": "core",
+      "category": "financial",
+      "value": "\\bsend money\\b"
+    },
+    {
+      "set": "core",
+      "category": "financial",
+      "value": "\\btransfer money\\b"
+    },
+    {
+      "set": "core",
+      "category": "financial",
+      "value": "\\bmake a payment\\b"
+    },
+    {
+      "set": "core",
+      "category": "financial",
+      "value": "\\bpay now\\b"
+    },
+    {
+      "set": "core",
+      "category": "financial",
+      "value": "\\bpay\\s+(?:₹|\\$|€|£)?\\s*\\d+"
+    },
+    {
+      "set": "core",
+      "category": "financial",
+      "value": "\\bpayment\\b"
+    },
+    {
+      "set": "core",
+      "category": "financial",
+      "value": "\\bdeposit\\b"
+    },
+    {
+      "set": "core",
+      "category": "financial",
+      "value": "\\bfee\\b"
+    },
+    {
+      "set": "core",
+      "category": "financial",
+      "value": "\\bregistration fee\\b"
+    },
+    {
+      "set": "core",
+      "category": "financial",
+      "value": "\\bdelivery fee\\b"
+    },
+    {
+      "set": "core",
+      "category": "financial",
+      "value": "\\bcustoms fee\\b"
+    },
+    {
+      "set": "core",
+      "category": "financial",
+      "value": "\\bpayment required\\b"
+    },
+    {
+      "set": "core",
+      "category": "banking_term",
+      "value": "bank"
+    },
+    {
+      "set": "core",
+      "category": "banking_term",
+      "value": "bank account"
+    },
+    {
+      "set": "core",
+      "category": "banking_term",
+      "value": "customer care"
+    },
+    {
+      "set": "core",
+      "category": "banking_term",
+      "value": "customer support"
+    },
+    {
+      "set": "core",
+      "category": "banking_term",
+      "value": "credit card"
+    },
+    {
+      "set": "core",
+      "category": "banking_term",
+      "value": "debit card"
+    },
+    {
+      "set": "core",
+      "category": "banking_term",
+      "value": "net banking"
+    },
+    {
+      "set": "core",
+      "category": "banking_term",
+      "value": "internet banking"
+    },
+    {
+      "set": "core",
+      "category": "banking_term",
+      "value": "kyc"
+    },
+    {
+      "set": "core",
+      "category": "banking_term",
+      "value": "account"
+    },
+    {
+      "set": "core",
+      "category": "kyc",
+      "value": "\\bkyc\\b"
+    },
+    {
+      "set": "core",
+      "category": "kyc",
+      "value": "\\bkyc expiry\\b"
+    },
+    {
+      "set": "core",
+      "category": "kyc",
+      "value": "\\bkyc expired\\b"
+    },
+    {
+      "set": "core",
+      "category": "kyc",
+      "value": "\\bverify your account\\b"
+    },
+    {
+      "set": "core",
+      "category": "kyc",
+      "value": "\\bverification required\\b"
+    },
+    {
+      "set": "core",
+      "category": "kyc",
+      "value": "\\bcomplete verification\\b"
+    },
+    {
+      "set": "core",
+      "category": "kyc",
+      "value": "\\bupdate your details\\b"
+    },
+    {
+      "set": "core",
+      "category": "delivery_context",
+      "value": "parcel"
+    },
+    {
+      "set": "core",
+      "category": "delivery_context",
+      "value": "package"
+    },
+    {
+      "set": "core",
+      "category": "delivery_context",
+      "value": "delivery"
+    },
+    {
+      "set": "core",
+      "category": "delivery_context",
+      "value": "shipment"
+    },
+    {
+      "set": "core",
+      "category": "delivery_context",
+      "value": "courier"
+    },
+    {
+      "set": "core",
+      "category": "delivery_context",
+      "value": "consignment"
+    },
+    {
+      "set": "core",
+      "category": "delivery_context",
+      "value": "tracking"
+    },
+    {
+      "set": "core",
+      "category": "delivery_problem",
+      "value": "could not be delivered"
+    },
+    {
+      "set": "core",
+      "category": "delivery_problem",
+      "value": "delivery failed"
+    },
+    {
+      "set": "core",
+      "category": "delivery_problem",
+      "value": "address is incomplete"
+    },
+    {
+      "set": "core",
+      "category": "delivery_problem",
+      "value": "address is incorrect"
+    },
+    {
+      "set": "core",
+      "category": "delivery_problem",
+      "value": "reschedule delivery"
+    },
+    {
+      "set": "core",
+      "category": "delivery_problem",
+      "value": "delivery fee"
+    },
+    {
+      "set": "core",
+      "category": "delivery_problem",
+      "value": "customs fee"
+    },
+    {
+      "set": "core",
+      "category": "generic_greeting",
+      "value": "dear user"
+    },
+    {
+      "set": "core",
+      "category": "generic_greeting",
+      "value": "dear customer"
+    },
+    {
+      "set": "core",
+      "category": "generic_greeting",
+      "value": "dear sir"
+    },
+    {
+      "set": "core",
+      "category": "generic_greeting",
+      "value": "dear madam"
+    },
+    {
+      "set": "core",
+      "category": "generic_greeting",
+      "value": "valued customer"
+    },
+    {
+      "set": "core",
+      "category": "type_investment",
+      "value": "investment"
+    },
+    {
+      "set": "core",
+      "category": "type_investment",
+      "value": "profit"
+    },
+    {
+      "set": "core",
+      "category": "type_investment",
+      "value": "return"
+    },
+    {
+      "set": "core",
+      "category": "type_investment",
+      "value": "crypto"
+    },
+    {
+      "set": "core",
+      "category": "type_job",
+      "value": "job"
+    },
+    {
+      "set": "core",
+      "category": "type_job",
+      "value": "salary"
+    },
+    {
+      "set": "core",
+      "category": "type_job",
+      "value": "vacancy"
+    },
+    {
+      "set": "core",
+      "category": "type_job",
+      "value": "hiring"
+    },
+    {
+      "set": "core",
+      "category": "type_delivery",
+      "value": "parcel"
+    },
+    {
+      "set": "core",
+      "category": "type_delivery",
+      "value": "package"
+    },
+    {
+      "set": "core",
+      "category": "type_delivery",
+      "value": "delivery"
+    },
+    {
+      "set": "core",
+      "category": "type_delivery",
+      "value": "shipment"
+    },
+    {
+      "set": "extended",
+      "category": "urgency",
+      "value": "\\blast chance\\b"
+    },
+    {
+      "set": "extended",
+      "category": "urgency",
+      "value": "\\bexpires? today\\b"
+    },
+    {
+      "set": "extended",
+      "category": "urgency",
+      "value": "\\bact fast\\b"
+    },
+    {
+      "set": "extended",
+      "category": "urgency",
+      "value": "\\blimited time\\b"
+    },
+    {
+      "set": "extended",
+      "category": "urgency",
+      "value": "\\bwithin\\s+\\d+\\s*(?:minutes?|mins?)\\b"
+    },
+    {
+      "set": "extended",
+      "category": "threat",
+      "value": "\\b(?:service|sim|number|card)\\b.*\\b(?:deactivated|disconnected|blocked)\\b"
+    },
+    {
+      "set": "extended",
+      "category": "threat",
+      "value": "\\bunauthori[sz]ed (?:login|transaction|access)\\b"
+    },
+    {
+      "set": "extended",
+      "category": "kyc",
+      "value": "\\bpan card\\b.*\\bupdate\\b"
+    },
+    {
+      "set": "extended",
+      "category": "kyc",
+      "value": "\\bconfirm your identity\\b"
+    },
+    {
+      "set": "extended",
+      "category": "kyc",
+      "value": "\\bre-?activate your account\\b"
+    },
+    {
+      "set": "extended",
+      "category": "financial",
+      "value": "\\bgift ?cards?\\b"
+    },
+    {
+      "set": "extended",
+      "category": "financial",
+      "value": "\\bprocessing fee\\b"
+    },
+    {
+      "set": "extended",
+      "category": "financial",
+      "value": "\\brefund\\b.*\\bclaim\\b"
+    },
+    {
+      "set": "extended",
+      "category": "generic_greeting",
+      "value": "dear account holder"
+    },
+    {
+      "set": "extended",
+      "category": "generic_greeting",
+      "value": "dear valued member"
+    },
+    {
+      "set": "extended",
+      "category": "type_investment",
+      "value": "bitcoin"
+    },
+    {
+      "set": "extended",
+      "category": "type_investment",
+      "value": "trading signal"
+    },
+    {
+      "set": "extended",
+      "category": "type_investment",
+      "value": "guaranteed returns"
+    },
+    {
+      "set": "extended",
+      "category": "type_job",
+      "value": "work from home"
+    },
+    {
+      "set": "extended",
+      "category": "type_job",
+      "value": "part-time job"
+    },
+    {
+      "set": "extended",
+      "category": "type_job",
+      "value": "daily income"
+    }
+  ],
+  "brands": [
+    {
+      "set": "core",
+      "name": "sbi",
+      "legit_domains": [
+        "sbi.co.in"
+      ],
+      "sector": "banking"
+    },
+    {
+      "set": "core",
+      "name": "state bank of india",
+      "legit_domains": [
+        "sbi.co.in"
+      ],
+      "sector": "banking"
+    },
+    {
+      "set": "core",
+      "name": "hdfc",
+      "legit_domains": [
+        "hdfcbank.com"
+      ],
+      "sector": "banking"
+    },
+    {
+      "set": "core",
+      "name": "hdfc bank",
+      "legit_domains": [
+        "hdfcbank.com"
+      ],
+      "sector": "banking"
+    },
+    {
+      "set": "core",
+      "name": "icici",
+      "legit_domains": [
+        "icicibank.com"
+      ],
+      "sector": "banking"
+    },
+    {
+      "set": "core",
+      "name": "icici bank",
+      "legit_domains": [
+        "icicibank.com"
+      ],
+      "sector": "banking"
+    },
+    {
+      "set": "core",
+      "name": "axis",
+      "legit_domains": [
+        "axisbank.com"
+      ],
+      "sector": "banking"
+    },
+    {
+      "set": "core",
+      "name": "axis bank",
+      "legit_domains": [
+        "axisbank.com"
+      ],
+      "sector": "banking"
+    },
+    {
+      "set": "core",
+      "name": "kotak",
+      "legit_domains": [
+        "kotak.com"
+      ],
+      "sector": "banking"
+    },
+    {
+      "set": "core",
+      "name": "kotak mahindra",
+      "legit_domains": [
+        "kotak.com"
+      ],
+      "sector": "banking"
+    },
+    {
+      "set": "extended",
+      "name": "paypal",
+      "legit_domains": [
+        "paypal.com",
+        "paypal.me"
+      ],
+      "sector": "payments"
+    },
+    {
+      "set": "extended",
+      "name": "paytm",
+      "legit_domains": [
+        "paytm.com",
+        "paytm.in"
+      ],
+      "sector": "payments"
+    },
+    {
+      "set": "extended",
+      "name": "phonepe",
+      "legit_domains": [
+        "phonepe.com"
+      ],
+      "sector": "payments"
+    },
+    {
+      "set": "extended",
+      "name": "google pay",
+      "legit_domains": [
+        "pay.google.com",
+        "google.com"
+      ],
+      "sector": "payments"
+    },
+    {
+      "set": "extended",
+      "name": "amazon",
+      "legit_domains": [
+        "amazon.com",
+        "amazon.in",
+        "amazon.co.uk",
+        "amazon.de",
+        "amzn.to",
+        "a.co"
+      ],
+      "sector": "retail"
+    },
+    {
+      "set": "extended",
+      "name": "flipkart",
+      "legit_domains": [
+        "flipkart.com",
+        "fkrt.it"
+      ],
+      "sector": "retail"
+    },
+    {
+      "set": "extended",
+      "name": "netflix",
+      "legit_domains": [
+        "netflix.com"
+      ],
+      "sector": "streaming"
+    },
+    {
+      "set": "extended",
+      "name": "microsoft",
+      "legit_domains": [
+        "microsoft.com",
+        "live.com",
+        "office.com",
+        "microsoftonline.com",
+        "outlook.com"
+      ],
+      "sector": "technology"
+    },
+    {
+      "set": "extended",
+      "name": "apple id",
+      "legit_domains": [
+        "apple.com",
+        "icloud.com"
+      ],
+      "sector": "technology"
+    },
+    {
+      "set": "extended",
+      "name": "icloud",
+      "legit_domains": [
+        "icloud.com",
+        "apple.com"
+      ],
+      "sector": "technology"
+    },
+    {
+      "set": "extended",
+      "name": "whatsapp",
+      "legit_domains": [
+        "whatsapp.com",
+        "wa.me"
+      ],
+      "sector": "messaging"
+    },
+    {
+      "set": "extended",
+      "name": "dhl",
+      "legit_domains": [
+        "dhl.com",
+        "dhl.de",
+        "dhl.co.uk",
+        "dhl.co.in"
+      ],
+      "sector": "delivery"
+    },
+    {
+      "set": "extended",
+      "name": "fedex",
+      "legit_domains": [
+        "fedex.com"
+      ],
+      "sector": "delivery"
+    },
+    {
+      "set": "extended",
+      "name": "usps",
+      "legit_domains": [
+        "usps.com"
+      ],
+      "sector": "delivery"
+    },
+    {
+      "set": "extended",
+      "name": "india post",
+      "legit_domains": [
+        "indiapost.gov.in"
+      ],
+      "sector": "delivery"
+    }
+  ],
+  "suspicious_tlds": [
+    {
+      "set": "core",
+      "tld": ".tk"
+    },
+    {
+      "set": "core",
+      "tld": ".ml"
+    },
+    {
+      "set": "core",
+      "tld": ".ga"
+    },
+    {
+      "set": "core",
+      "tld": ".cf"
+    },
+    {
+      "set": "core",
+      "tld": ".gq"
+    },
+    {
+      "set": "extended",
+      "tld": ".top"
+    },
+    {
+      "set": "extended",
+      "tld": ".icu"
+    },
+    {
+      "set": "extended",
+      "tld": ".cyou"
+    },
+    {
+      "set": "extended",
+      "tld": ".sbs"
+    },
+    {
+      "set": "extended",
+      "tld": ".buzz"
+    },
+    {
+      "set": "extended",
+      "tld": ".rest"
+    },
+    {
+      "set": "extended",
+      "tld": ".click"
+    },
+    {
+      "set": "extended",
+      "tld": ".zip"
+    },
+    {
+      "set": "extended",
+      "tld": ".mov"
+    }
+  ]
+}
